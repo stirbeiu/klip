@@ -4,12 +4,13 @@ import Video from '@/models/Video';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     
     const video = await Video.findById(id).populate('uploaderId', 'username profilePicture');
       
