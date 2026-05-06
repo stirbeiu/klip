@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="description"
+        content="klip - Share and discover amazing content. Upload, explore, and connect with your community.">
+    <title>klip</title>
+    <script src="js/theme-init.js"></script>
+</head>
+
+<body>
+    <!-- App Notice -->
+    <div id="app-notice"></div>
+
+    <!-- App Header Container -->
+    <div id="app-header"></div>
+
+    <main style="min-height: 80vh;">
+        <div class="content">
+            <!-- Featured Section -->
+            <section class="video-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-star" style="color: var(--accent-color);"></i> Featured</h2>
+                </div>
+                <!-- Dynamic Content: Featured Videos -->
+                <div class="video-grid" id="featured-container">
+                    <!-- Loaded via main.js + data.js -->
+                </div>
+            </section>
+
+            <!-- Most Popular Categories Section -->
+            <section class="video-section">
+                <div class="section-header" style="margin-bottom: 2rem;">
+                    <h2><i class="fa-solid fa-fire" style="color: var(--accent-color);"></i> Most Popular</h2>
+                </div>
+
+                <!-- Dynamic Content: Category Rows -->
+                <div id="popular-container">
+                    <!-- Loaded via main.js + data.js -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- App Footer Container -->
+    <div id="app-footer"></div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/toggleappearance.js"></script>
+</body>
+
+</html>

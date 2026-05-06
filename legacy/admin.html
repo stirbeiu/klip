@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Admin Dashboard - klip</title>
+    <script src="js/theme-init.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Check for admin role immediately to prevent flash of content
+        if (!Auth.isAdmin()) {
+            window.location.replace('index.html');
+        }
+    </script>
+    <style>
+        :root {
+            --admin-bg: #111111;
+            --admin-card-bg: #1a1a1a;
+            --admin-border: var(--secondary-color);
+            --admin-text: #eeeeee;
+            --admin-text-muted: #aaaaaa;
+            --admin-hover: #2a2a2a;
+            --admin-accent: var(--accent-color, #ff6f6f);
+            --admin-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        :root.light-mode {
+            --admin-bg: #f3f4f6;
+            --admin-card-bg: #ffffff;
+            --admin-text: #1f2937;
+            --admin-text-muted: #6b7280;
+            --admin-hover: #f9fafb;
+            --admin-accent: var(--accent-color, #ff5252);
+            --admin-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            color: var(--admin-text) !important;
+        }
+
+        .admin-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+            margin: 2rem;
+            min-height: 70vh;
+        }
+
+        .admin-sidebar {
+            background-color: var(--admin-card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--admin-border);
+            box-shadow: var(--admin-shadow);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .admin-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .admin-nav-item {
+            padding: 0.85rem 1.2rem;
+            border-radius: 10px;
+            color: var(--admin-text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .admin-nav-item:hover {
+            background-color: var(--admin-hover);
+            color: var(--admin-text);
+            transform: translateX(4px);
+        }
+
+        .admin-nav-item.active {
+            background-color: var(--admin-accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 111, 111, 0.3);
+        }
+
+        .admin-content-area {
+            background-color: var(--admin-card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid var(--admin-border);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .admin-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--admin-text);
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--admin-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--admin-shadow);
+        }
+
+        .stat-card-title {
+            color: var(--admin-text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+
+        .stat-card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--admin-text);
+            line-height: 1;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 1.2rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--admin-border);
+            color: var(--admin-text);
+        }
+
+        .admin-table th {
+            color: var(--admin-text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-table tr:hover td {
+            background-color: var(--admin-hover);
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-btn {
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-edit {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-ban {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        .btn-resolve {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Grouped stats text */
+        .stats-group-title {
+            color: var(--admin-text-muted);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stats-group-title:first-child {
+            margin-top: 0;
+        }
+
+        /* Filter header row */
+        .filters-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: var(--admin-text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .admin-select {
+            background-color: var(--admin-bg);
+            color: var(--admin-text);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: calc(100% - 10px) center;
+            padding-right: 2rem;
+        }
+
+        .light-mode .admin-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        }
+
+        .admin-select:focus {
+            border-color: var(--admin-accent);
+        }
+
+        .report-notice {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            color: var(--admin-text);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .severity-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .sev-critical {
+            background-color: #ef4444;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .sev-high {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .sev-medium {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .sev-low {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .report-row {
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sidebar {
+                position: static;
+            }
+        }
+
+        /* Section hiding */
+        .admin-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-active {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-banned {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- App Notice -->
+    <div id="app-notice"></div>
+
+    <!-- App Header Container -->
+    <div id="app-header"></div>
+
+    <main style="min-height: 80vh;">
+        <div class="content">
+
+            <div class="admin-container">
+                <aside class="admin-sidebar">
+                    <nav class="admin-nav">
+                        <a class="admin-nav-item active" data-target="dashboard">
+                            <i class="fa-solid fa-chart-line"></i> Statistics
+                        </a>
+                        <a class="admin-nav-item" data-target="reports">
+                            <i class="fa-solid fa-robot"></i> Automated Interventions
+                        </a>
+                        <a class="admin-nav-item" data-target="manual-reports">
+                            <i class="fa-solid fa-user-shield"></i> Manual Interventions
+                        </a>
+                    </nav>
+                </aside>
+
+                <section class="admin-content-area">
+                    <!-- Dashboard Overview -->
+                    <div id="dashboard" class="admin-section active">
+                        <h4 class="stats-group-title">Klip statistics</h4>
+                        <div class="stat-cards">
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-brands fa-youtube"
+                                        style="margin-right: 5px;"></i> Videos</span>
+                                <span class="stat-card-value">576,341</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-users"
+                                        style="margin-right: 5px;"></i> Channels</span>
+                                <span class="stat-card-value">2,593</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-comments"
+                                        style="margin-right: 5px;"></i> Comments</span>
+                                <span class="stat-card-value">6,235</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-handshake"
+                                        style="margin-right: 5px;"></i> Partners</span>
+                                <span class="stat-card-value">315</span>
+                            </div>
+                        </div>
+
+                        <h4 class="stats-group-title">Reports</h4>
+                        <div class="stat-cards">
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-triangle-exclamation"
+                                        style="margin-right: 5px; color: #ef4444;"></i> Total</span>
+                                <span class="stat-card-value" style="color: #ef4444;">2,576</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-brands fa-youtube"
+                                        style="margin-right: 5px;"></i> Videos</span>
+                                <span class="stat-card-value">1,337</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-users"
+                                        style="margin-right: 5px;"></i> Channels</span>
+                                <span class="stat-card-value">256</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-card-title"><i class="fa-solid fa-comments"
+                                        style="margin-right: 5px;"></i> Comments</span>
+                                <span class="stat-card-value">1,204</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Reports -->
+                    <div id="manual-reports" class="admin-section">
+                        <div class="admin-header">
+                            <h3>Manual Reports</h3>
+                        </div>
+
+                        <div class="report-notice"
+                            style="background-color: rgba(245, 158, 11, 0.1); border-left-color: #f59e0b;">
+                            <i class="fa-solid fa-user-shield" style="margin-right: 8px;"></i>
+                            Reports that the automated system has not been able to process,
+                            whether submitted manually by klip users or by the system.
+                            These require moderator review.
+                        </div>
+
+                        <div class="filters-container">
+                            <div class="filter-group">
+                                <label for="m-filter-type">Type</label>
+                                <select id="m-filter-type" class="admin-select">
+                                    <option value="all">All</option>
+                                    <option value="channels">Channels</option>
+                                    <option value="videos">Videos</option>
+                                    <option value="comments">Comments</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="m-filter-time">Timeframe</label>
+                                <select id="m-filter-time" class="admin-select">
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="m-filter-claim">Claim Reason</label>
+                                <select id="m-filter-claim" class="admin-select">
+                                    <option value="all">All reasons</option>
+                                    <option value="spam">Spam / Scams</option>
+                                    <option value="harassment">Harassment</option>
+                                    <option value="copyright">Copyright Check</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="m-filter-status">Status</label>
+                                <select id="m-filter-status" class="admin-select">
+                                    <option value="pending">Review Pending</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Content Type</th>
+                                    <th>Reported By</th>
+                                    <th>Target User</th>
+                                    <th>Claim Reason</th>
+                                    <th>Review Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="report-row">
+                                    <td><strong>Comment</strong> on #8921</td>
+                                    <td>honest_user</td>
+                                    <td>troll_master</td>
+                                    <td>Harassment</td>
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                </tr>
+                                <tr class="report-row">
+                                    <td><strong>Video</strong> (#8810)</td>
+                                    <td>music_labels_inc</td>
+                                    <td>DJ_Mixer</td>
+                                    <td>Copyright Check</td>
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                </tr>
+                                <tr class="report-row">
+                                    <td><strong>Channel</strong></td>
+                                    <td>community_mod</td>
+                                    <td>spammer99</td>
+                                    <td>Spam / Scams</td>
+                                    <td><span class="status-badge status-active">Resolved</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Reports -->
+                    <div id="reports" class="admin-section">
+                        <div class="admin-header">
+                            <h3>Automated Reports</h3>
+                        </div>
+
+                        <div class="report-notice">
+                            <i class="fa-solid fa-robot" style="margin-right: 8px;"></i>
+                            Content that is automatically reviewed by the system,
+                            whether is detected or reported by users.
+                            False-positives are possible, in which case users can request a manual review.
+                        </div>
+
+                        <div class="filters-container">
+                            <div class="filter-group">
+                                <label for="filter-type">Type</label>
+                                <select id="filter-type" class="admin-select">
+                                    <option value="all">All</option>
+                                    <option value="channels">Channels</option>
+                                    <option value="videos">Videos</option>
+                                    <option value="comments">Comments</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-time">Timeframe</label>
+                                <select id="filter-time" class="admin-select">
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-sev">Severity</label>
+                                <select id="filter-sev" class="admin-select">
+                                    <option value="all">All levels</option>
+                                    <option value="code-red">CODE RED!!!</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-status">Appeal Status</label>
+                                <select id="filter-status" class="admin-select">
+                                    <option value="all">All statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="approved">Approved</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Content Type</th>
+                                    <th>Author</th>
+                                    <th>Timeframe</th>
+                                    <th>Severity</th>
+                                    <th>Appeal Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="report-row">
+                                    <td><strong>Video</strong> (#2491)</td>
+                                    <td>sketchy_user</td>
+                                    <td>Today, 14:02</td>
+                                    <td><span class="severity-badge sev-critical">CODE RED!!!</span></td>
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                </tr>
+                                <tr class="report-row">
+                                    <td><strong>Comment</strong></td>
+                                    <td>spammer99</td>
+                                    <td>Yesterday</td>
+                                    <td><span class="severity-badge sev-medium">Medium</span></td>
+                                    <td><span class="status-badge status-banned">Rejected</span></td>
+                                </tr>
+                                <tr class="report-row">
+                                    <td><strong>Channel</strong></td>
+                                    <td>innocent_creator</td>
+                                    <td>Oct 12, 10:44</td>
+                                    <td><span class="severity-badge sev-low">Low</span></td>
+                                    <td><span class="status-badge status-active">Approved</span></td>
+                                </tr>
+                                <tr class="report-row">
+                                    <td><strong>Video</strong> (#9002)</td>
+                                    <td>gamer_zone</td>
+                                    <td>Today, 09:12</td>
+                                    <td><span class="severity-badge sev-high">High</span></td>
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- App Footer Container -->
+    <div id="app-footer"></div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/toggleappearance.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Admin panel navigation logic
+            const navItems = document.querySelectorAll('.admin-nav-item');
+            const sections = document.querySelectorAll('.admin-section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    sections.forEach(sec => sec.classList.remove('active'));
+
+                    // Add active class to clicked item and corresponding section
+                    item.classList.add('active');
+                    const targetId = item.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            // Re-check authentication strictly on load as well in case script tags above didn't fire (though they synchronous)
+            if (!Auth.isAdmin()) {
+                window.location.replace('index.html');
+            }
+        });
+    </script>
+</body>
+
+</html>
