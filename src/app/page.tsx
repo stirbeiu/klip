@@ -5,7 +5,7 @@ import Category from '@/models/Category';
 import VideoCard from '@/components/video/VideoCard';
 import { Star, TrendingUp } from 'lucide-react';
 
-export const revalidate = 60; // revalidate every 60 seconds
+export const dynamic = 'force-dynamic';
 
 async function getFeaturedVideos() {
   try {
