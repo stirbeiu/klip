@@ -1,10 +1,23 @@
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Upload } from 'lucide-react';
+import { Search, Upload, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import AuthDialog from '@/components/auth/AuthDialog';
+import LogoutButton from '@/components/auth/LogoutButton';
+import { getSession } from '@/lib/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-export default function Header() {
+export default async function Header() {
+  const session = await getSession();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 mx-auto items-center justify-between px-4">
@@ -28,11 +41,50 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Upload className="h-5 w-5 text-muted-foreground" />
-            <span className="sr-only">Upload Video</span>
-          </Button>
-          <AuthDialog />
+          {session ? (
+            <>
+              {session.role === 'admin' && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="icon" className="hidden sm:flex">
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <span className="sr-only">Upload Video</span>
+                  </Button>
+                </Link>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="relative h-8 w-8 rounded-full cursor-pointer focus:outline-none">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session.profilePicture as string} alt={session.username as string} />
+                    <AvatarFallback>{(session.username as string).charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session.username as string}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {session.role === 'admin' ? 'Administrator' : 'User'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {session.role === 'admin' && (
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Link href="/admin" className="flex items-center w-full">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem className="cursor-pointer">
+                    <LogoutButton />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <AuthDialog />
+          )}
         </div>
       </div>
     </header>

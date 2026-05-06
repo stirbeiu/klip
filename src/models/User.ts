@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IUser extends Document {
   username: string;
   email: string;
+  password?: string;
   profilePicture: string;
   role: 'user' | 'admin';
   createdAt: Date;
@@ -23,6 +24,11 @@ const UserSchema: Schema<IUser> = new Schema(
       lowercase: true,
       trim: true,
     },
+    password: {
+      type: String,
+      // Not strictly required in case of future OAuth, but required for local auth
+    },
+
     profilePicture: {
       type: String,
       default: 'https://ui-avatars.com/api/?name=User&background=random',

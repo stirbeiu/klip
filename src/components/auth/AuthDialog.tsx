@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,15 +17,38 @@ import {
 export default function AuthDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login API call
-    setTimeout(() => {
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const identifier = formData.get('identifier');
+    const password = formData.get('password');
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setIsOpen(false);
+        router.refresh(); // Refresh to update server components (Header)
+      } else {
+        setError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      setIsOpen(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -40,16 +64,17 @@ export default function AuthDialog() {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          {error && <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">{error}</div>}
           <div className="space-y-2">
-            <Label htmlFor="username">Username or Email</Label>
-            <Input id="username" placeholder="developer@klip.com" required />
+            <Label htmlFor="identifier">Username or Email</Label>
+            <Input id="identifier" name="identifier" placeholder="sstirbeiu" required />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
               <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
             </div>
-            <Input id="password" type="password" required />
+            <Input id="password" name="password" type="password" required />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Logging in...' : 'Log In'}

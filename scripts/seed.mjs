@@ -37,13 +37,17 @@ async function seed() {
     await Video.deleteMany({});
 
     // 1. Create Admin Account
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    
     const admin = await User.create({
-      username: 'Admin',
-      email: 'admin@klip.com',
-      profilePicture: 'https://ui-avatars.com/api/?name=Admin&background=random',
+      username: 'sstirbeiu',
+      email: 'sstirbeiu@klip.com',
+      password: hashedPassword,
+      profilePicture: 'https://ui-avatars.com/api/?name=Stefan&background=random',
       role: 'admin'
     });
-    console.log(`✅ Admin account created: ${admin.username}`);
+    console.log(`✅ Admin account created: ${admin.username} (Password: admin123)`);
 
     // 2. Create Sample Video
     const sampleVideo = await Video.create({
