@@ -43,14 +43,7 @@ export default async function Header() {
         <div className="flex items-center gap-4">
           {session ? (
             <>
-              {session.role === 'admin' && (
-                <Link href="/admin">
-                  <Button variant="ghost" size="icon" className="hidden sm:flex">
-                    <Upload className="h-5 w-5 text-muted-foreground" />
-                    <span className="sr-only">Upload Video</span>
-                  </Button>
-                </Link>
-              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger className="relative h-8 w-8 rounded-full cursor-pointer focus:outline-none">
                   <Avatar className="h-8 w-8">

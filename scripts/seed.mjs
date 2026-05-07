@@ -5,6 +5,7 @@ import 'dotenv/config'; // We'll install dotenv to run this easily
 const userSchema = new mongoose.Schema({
   username: String,
   email: String,
+  password: String,
   profilePicture: String,
   role: String,
 }, { timestamps: true });
