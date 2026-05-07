@@ -1,19 +1,10 @@
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Upload, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { Search } from 'lucide-react';
 import AuthDialog from '@/components/auth/AuthDialog';
-import LogoutButton from '@/components/auth/LogoutButton';
 import { getSession } from '@/lib/auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import UserAccountMenu from '@/components/layout/UserAccountMenu';
 
 export default async function Header() {
   const session = await getSession();
@@ -44,36 +35,13 @@ export default async function Header() {
           {session ? (
             <>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger className="relative h-8 w-8 rounded-full cursor-pointer focus:outline-none">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.profilePicture as string} alt={session.username as string} />
-                    <AvatarFallback>{(session.username as string).charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session.username as string}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.role === 'admin' ? 'Administrator' : 'User'}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {session.role === 'admin' && (
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Link href="/admin" className="flex items-center w-full">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem className="cursor-pointer">
-                    <LogoutButton />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserAccountMenu 
+                user={{
+                  username: session.username as string,
+                  role: session.role as string,
+                  profilePicture: session.profilePicture as string
+                }} 
+              />
             </>
           ) : (
             <AuthDialog />
